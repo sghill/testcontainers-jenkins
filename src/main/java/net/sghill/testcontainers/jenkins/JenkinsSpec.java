@@ -6,6 +6,7 @@ import java.util.Map;
 
 @AutoValue
 public abstract class JenkinsSpec {
+    public abstract String version();
     public abstract Map<String, String> updateCenterPlugins();
 
     public String installLine() {
@@ -16,7 +17,7 @@ public abstract class JenkinsSpec {
         return sb.toString();
     }
 
-    public static JenkinsSpec create(Map<String, String> updateCenterPlugins) {
-        return new AutoValue_JenkinsSpec(updateCenterPlugins);
+    public static JenkinsSpec create(Map<String, String> updateCenterPlugins, String version) {
+        return new AutoValue_JenkinsSpec(version, updateCenterPlugins);
     }
 }

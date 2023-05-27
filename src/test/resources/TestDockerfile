@@ -1,2 +1,5 @@
 FROM jenkins/jenkins:lts-jdk11
-RUN jenkins-plugin-cli --plugins ant
+COPY --chown=jenkins:jenkins startup.groovy /usr/share/jenkins/ref/init.groovy.d/startup.groovy
+RUN echo -n 2.0 > /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion && \
+    echo -n 2.0 > /var/jenkins_home/jenkins.install.UpgradeWizard.state && \
+    jenkins-plugin-cli --plugins ant

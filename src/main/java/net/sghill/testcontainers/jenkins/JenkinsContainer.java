@@ -1,5 +1,8 @@
 package net.sghill.testcontainers.jenkins;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.sghill.testcontainers.jenkins.gen.GeneratedInfo;
+import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
@@ -8,6 +11,8 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -17,6 +22,8 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     public static final int PORT = 8080;
     public static final int INBOUND_AGENT_PORT = 50_000;
     private static final String STARTED_LOG_LINE = ".*Jenkins is fully up and running\n";
+
+    private GeneratedInfo info;
 
     public JenkinsContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -35,5 +42,23 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
 //                        .build()));
         waitingFor(Wait.forLogMessage(STARTED_LOG_LINE, 1));
         addExposedPorts(PORT, INBOUND_AGENT_PORT);
+    }
+
+    public GeneratedUser getUserByUsername(String username) {
+        if (info == null) {
+            try {
+                Path localDestination = Files.createTempFile("tc-jenkins-", ".json");
+                copyFileFromContainer("/var/jenkins_home/.tc.json", localDestination.toString());
+                info = new ObjectMapper().readValue(localDestination.toFile(), GeneratedInfo.class);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        for (GeneratedUser user : info.users()) {
+            if (user.username().equals(username)) {
+                return user;
+            }
+        }
+        return null;
     }
 }
