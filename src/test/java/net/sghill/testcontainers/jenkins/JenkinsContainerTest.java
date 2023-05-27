@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
+import static net.sghill.testcontainers.jenkins.JenkinsContainer.PORT;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 
@@ -18,7 +19,7 @@ public class JenkinsContainerTest {
         try (JenkinsContainer jenkinsServer = new JenkinsContainer(imageName)) {
             jenkinsServer.start();
 
-            Integer mappedPort = jenkinsServer.getMappedPort(JenkinsContainer.PORT);
+            Integer mappedPort = jenkinsServer.getMappedPort(PORT);
 
             given()
                     .port(mappedPort).
@@ -32,9 +33,9 @@ public class JenkinsContainerTest {
     public void shouldInstallGivenPlugins() {
         Map<String, String> p = new HashMap<>();
         p.put("ant", "");
-        try (JenkinsContainer jenkinsServer = new JenkinsContainer(JenkinsSpec.create(p, "2.387.3"))) {
+        JenkinsSpec spec = JenkinsSpec.create(p, "2.387.3");
+        try (JenkinsContainer jenkinsServer = new JenkinsContainer(spec)) {
             jenkinsServer.start();
-            Integer mappedPort = jenkinsServer.getMappedPort(JenkinsContainer.PORT);
 
             GeneratedUser ted = jenkinsServer.getUserByUsername("ted");
 
@@ -42,12 +43,11 @@ public class JenkinsContainerTest {
                 .auth()
                     .preemptive()
                     .basic(ted.username(), ted.apiToken())
-                .port(mappedPort)
+                .port(jenkinsServer.getMappedPort(PORT))
             .when()
                 .get("/pluginManager/api/json?depth=1")
             .then()
                 .body("plugins.shortName", hasItem("ant"));
-
         }
     }
 }
