@@ -1,6 +1,7 @@
 package net.sghill.testcontainers.jenkins;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.sghill.testcontainers.jenkins.gen.GeneratedAgent;
 import net.sghill.testcontainers.jenkins.gen.GeneratedInfo;
 import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
 import org.testcontainers.containers.GenericContainer;
@@ -23,7 +24,7 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     public static final int INBOUND_AGENT_PORT = 50_000;
     private static final String STARTED_LOG_LINE = ".*Jenkins is fully up and running\n";
 
-    private GeneratedInfo info;
+    private GeneratedInfo _info;
 
     public JenkinsContainer(DockerImageName dockerImageName) {
         super(dockerImageName);
@@ -45,20 +46,36 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     }
 
     public GeneratedUser getUserByUsername(String username) {
-        if (info == null) {
-            try {
-                Path localDestination = Files.createTempFile("tc-jenkins-", ".json");
-                copyFileFromContainer("/var/jenkins_home/.tc.json", localDestination.toString());
-                info = new ObjectMapper().readValue(localDestination.toFile(), GeneratedInfo.class);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        GeneratedInfo info = info();
         for (GeneratedUser user : info.users()) {
             if (user.username().equals(username)) {
                 return user;
             }
         }
         return null;
+    }
+
+    public GeneratedAgent getAgentByName(String name) {
+        GeneratedInfo info = info();
+        for (GeneratedAgent agent : info.agents()) {
+            if (agent.name().equals(name)) {
+                return agent;
+            }
+        }
+        return null;
+    }
+
+    private GeneratedInfo info() {
+        if (_info != null) {
+            return _info;
+        }
+        try {
+            Path localDestination = Files.createTempFile("tc-jenkins-", ".json");
+            copyFileFromContainer("/var/jenkins_home/.tc.json", localDestination.toString());
+            _info = new ObjectMapper().readValue(localDestination.toFile(), GeneratedInfo.class);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return _info;
     }
 }

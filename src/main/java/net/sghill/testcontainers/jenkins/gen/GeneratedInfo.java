@@ -8,11 +8,15 @@ import java.util.Set;
 
 @AutoValue
 public abstract class GeneratedInfo {
+    @JsonProperty("agents")
+    public abstract Set<GeneratedAgent> agents();
+
     @JsonProperty("users")
     public abstract Set<GeneratedUser> users();
 
     @JsonCreator
-    public static GeneratedInfo create(@JsonProperty("users") Set<GeneratedUser> users) {
-        return new AutoValue_GeneratedInfo(users);
+    public static GeneratedInfo create(@JsonProperty("users") Set<GeneratedUser> users,
+                                       @JsonProperty("agents") Set<GeneratedAgent> agents) {
+        return new AutoValue_GeneratedInfo(agents, users);
     }
 }
