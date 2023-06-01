@@ -7,15 +7,9 @@ import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.lifecycle.Startable;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jenkins/jenkins");
@@ -69,13 +63,7 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
         if (_info != null) {
             return _info;
         }
-        try {
-            Path localDestination = Files.createTempFile("tc-jenkins-", ".json");
-            copyFileFromContainer("/var/jenkins_home/.tc.json", localDestination.toString());
-            _info = new ObjectMapper().readValue(localDestination.toFile(), GeneratedInfo.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return _info;
+        return _info = copyFileFromContainer("/var/jenkins_home/.tc.json", inputStream ->
+                new ObjectMapper().readValue(inputStream, GeneratedInfo.class));
     }
 }
