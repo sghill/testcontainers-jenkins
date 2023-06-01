@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sghill.testcontainers.jenkins.gen.GeneratedAgent;
 import net.sghill.testcontainers.jenkins.gen.GeneratedInfo;
 import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
+import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
+import net.sghill.testcontainers.jenkins.spec.PluginSpec;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.DockerImageName;
 
-import java.nio.file.Paths;
+import static java.util.stream.Collectors.joining;
 
 public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jenkins/jenkins");
@@ -28,13 +30,11 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     }
 
     public JenkinsContainer(JenkinsSpec spec) {
-        super(new ImageFromDockerfile().withDockerfile(Paths.get("src/test/resources/TestDockerfile")));
-        // TODO why didn't this work?
-//        super(new ImageFromDockerfile().withDockerfileFromBuilder(b ->
-//                b
-//                        .from(DEFAULT_IMAGE_NAME + ":" + DEFAULT_TAG)
-//                        .run("jenkins-plugin-cli --plugins " + spec.installLine())
-//                        .build()));
+        super(new ImageFromDockerfile().withDockerfileFromBuilder(b ->
+                b
+                        .from(spec.image() + ":" + spec.version())
+                        .run("jenkins-plugin-cli --plugins " + spec.plugins().stream().map(PluginSpec::toNotation).collect(joining(" ")))
+                        .build()));
         waitingFor(Wait.forLogMessage(STARTED_LOG_LINE, 1));
         addExposedPorts(PORT, INBOUND_AGENT_PORT);
     }

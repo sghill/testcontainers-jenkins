@@ -12,6 +12,7 @@ dependencies {
 
     testCompileOnly(libs.auto.value.annotations)
     testAnnotationProcessor(libs.auto.value)
+    testImplementation("org.assertj:assertj-core:3.+")
     testImplementation("io.rest-assured:rest-assured:5.3.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.awaitility:awaitility:4.+")

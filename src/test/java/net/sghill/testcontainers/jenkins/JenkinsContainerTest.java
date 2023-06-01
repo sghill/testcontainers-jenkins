@@ -7,6 +7,8 @@ import com.google.auto.value.AutoValue;
 import io.restassured.response.Response;
 import net.sghill.testcontainers.jenkins.gen.GeneratedAgent;
 import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
+import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
+import net.sghill.testcontainers.jenkins.spec.PluginSpec;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -18,11 +20,11 @@ import org.testcontainers.utility.DockerImageName;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import static io.restassured.RestAssured.given;
-import static net.sghill.testcontainers.jenkins.JenkinsContainer.PORT;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -35,7 +37,7 @@ public class JenkinsContainerTest {
         try (JenkinsContainer jenkinsServer = new JenkinsContainer(imageName)) {
             jenkinsServer.start();
 
-            Integer mappedPort = jenkinsServer.getMappedPort(PORT);
+            Integer mappedPort = jenkinsServer.getMappedPort(JenkinsContainer.PORT);
 
             given()
                     .port(mappedPort).
@@ -47,9 +49,9 @@ public class JenkinsContainerTest {
 
     @Test
     public void shouldInstallGivenPlugins() {
-        Map<String, String> p = new HashMap<>();
-        p.put("ant", "");
-        JenkinsSpec spec = JenkinsSpec.create(p, "2.387.3");
+        Set<PluginSpec> plugins = new HashSet<>();
+        plugins.add(PluginSpec.pluginBuilder().artifactId("ant").build());
+        JenkinsSpec spec = JenkinsSpec.jenkinsBuilder().plugins(plugins).build();
         try (JenkinsContainer jenkinsServer = new JenkinsContainer(spec)) {
             jenkinsServer.start();
 
@@ -59,7 +61,7 @@ public class JenkinsContainerTest {
                 .auth()
                     .preemptive()
                     .basic(ted.username(), ted.apiToken())
-                .port(jenkinsServer.getMappedPort(PORT))
+                .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
             .when()
                 .get("/pluginManager/api/json?depth=1")
             .then()
@@ -69,7 +71,7 @@ public class JenkinsContainerTest {
 
     @Test
     public void shouldConnectAgent() {
-        JenkinsSpec spec = JenkinsSpec.create(new HashMap<>(), "2.387.3");
+        JenkinsSpec spec = JenkinsSpec.jenkinsBuilder().build();
         try (Network network = Network.newNetwork();
              JenkinsContainer jenkinsServer = new JenkinsContainer(spec).withNetwork(network).withNetworkAliases("jcontroller")) {
             jenkinsServer.start();
@@ -78,7 +80,7 @@ public class JenkinsContainerTest {
                     .auth()
                     .preemptive()
                     .basic(ted.username(), ted.apiToken())
-                    .port(jenkinsServer.getMappedPort(PORT))
+                    .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
                     .when()
                     .get("/api/"); // X-Instance-Identity is not in the json response
             String instanceIdentity = response.header("X-Instance-Identity");
@@ -101,7 +103,7 @@ public class JenkinsContainerTest {
                                 .auth()
                                 .preemptive()
                                 .basic(ted.username(), ted.apiToken())
-                                .port(jenkinsServer.getMappedPort(PORT))
+                                .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
                                 .when()
                                 .get("/computer/api/json")
                                 .then()
