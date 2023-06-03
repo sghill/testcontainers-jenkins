@@ -4,22 +4,29 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
+import java.util.Set;
+
 @AutoValue
 public abstract class GeneratedUser {
 
-    @JsonProperty("username")
     public abstract String username();
 
-    @JsonProperty("password")
     public abstract String password();
-
-    @JsonProperty("apiToken")
-    public abstract String apiToken(); // TODO make this a map to better reflect the domain
+    
+    public abstract Set<GeneratedApiToken> apiTokens();
+    
+    public GeneratedApiToken anyApiToken() {
+        Set<GeneratedApiToken> tokens = apiTokens();
+        if (tokens.isEmpty()) {
+            return null;
+        }
+        return tokens.iterator().next();
+    }
 
     @JsonCreator
-    public static GeneratedUser create(@JsonProperty("username") String username,
+    public static GeneratedUser create(@JsonProperty("name") String username,
                                        @JsonProperty("password") String password,
-                                       @JsonProperty("apiToken") String apiToken) {
-        return new AutoValue_GeneratedUser(username, password, apiToken);
+                                       @JsonProperty("apiTokens") Set<GeneratedApiToken> apiTokens) {
+        return new AutoValue_GeneratedUser(username, password, apiTokens);
     }
 }

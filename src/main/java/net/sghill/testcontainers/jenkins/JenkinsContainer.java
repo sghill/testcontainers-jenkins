@@ -1,21 +1,31 @@
 package net.sghill.testcontainers.jenkins;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.sghill.testcontainers.jenkins.gen.GeneratedAgent;
 import net.sghill.testcontainers.jenkins.gen.GeneratedInfo;
 import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
+import net.sghill.testcontainers.jenkins.input.AgentRequest;
+import net.sghill.testcontainers.jenkins.input.ApiTokenRequest;
+import net.sghill.testcontainers.jenkins.input.ProvisioningRequest;
+import net.sghill.testcontainers.jenkins.input.UserRequest;
 import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
 import net.sghill.testcontainers.jenkins.spec.PluginSpec;
+import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 
 public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("jenkins/jenkins");
-    private static final String DEFAULT_TAG = "lts-jdk11";
     public static final int PORT = 8080;
     public static final int INBOUND_AGENT_PORT = 50_000;
     private static final String STARTED_LOG_LINE = ".*Jenkins is fully up and running\n";
@@ -30,13 +40,33 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     }
 
     public JenkinsContainer(JenkinsSpec spec) {
-        super(new ImageFromDockerfile().withDockerfileFromBuilder(b ->
+        super(new ImageFromDockerfile()
+                .withFileFromTransferable("jenkins-version", Transferable.of("2.387.2", 0100666))
+                .withFileFromTransferable("tc-input.json", Transferable.of(config()))
+                .withFileFromClasspath("startup.groovy", "startup.groovy")
+                .withDockerfileFromBuilder(b ->
                 b
                         .from(spec.image() + ":" + spec.version())
+                        .copy("jenkins-version", "/var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion")
+                        .copy("jenkins-version", "/var/jenkins_home/jenkins.install.UpgradeWizard.state") // TODO owned by root
+                        .copy("tc-input.json", "/var/jenkins_home/.tc.in.json")
+                        .copy("startup.groovy", "/usr/share/jenkins/ref/init.groovy.d/startup.groovy")
                         .run("jenkins-plugin-cli --plugins " + spec.plugins().stream().map(PluginSpec::toNotation).collect(joining(" ")))
                         .build()));
         waitingFor(Wait.forLogMessage(STARTED_LOG_LINE, 1));
         addExposedPorts(PORT, INBOUND_AGENT_PORT);
+    }
+
+    private static byte[] config() {
+        try {
+            return new ObjectMapper().writeValueAsBytes(
+                    ProvisioningRequest.create(
+                            Stream.of(UserRequest.create("ted", Stream.of(ApiTokenRequest.create("token1")).collect(toSet()))).collect(toSet()),
+                            Stream.of(AgentRequest.create("agent-1")).collect(toSet()))
+            );
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public GeneratedUser getUserByUsername(String username) {

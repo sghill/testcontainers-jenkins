@@ -5,13 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
 
 @AutoValue
-public abstract class GeneratedAgent {
+public abstract class GeneratedApiToken {
     public abstract String name();
-
-    public abstract String secret();
-
+    public abstract String token();
+    
     @JsonCreator
-    public static GeneratedAgent create(@JsonProperty("name") String name, @JsonProperty("secret") String secret) {
-        return new AutoValue_GeneratedAgent(name, secret);
+    public static GeneratedApiToken create(@JsonProperty("name") String name, @JsonProperty("token") String token) {
+        return new AutoValue_GeneratedApiToken(name, token);
     }
 }

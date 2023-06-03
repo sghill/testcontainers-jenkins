@@ -19,10 +19,11 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
@@ -60,7 +61,7 @@ public class JenkinsContainerTest {
             given()
                 .auth()
                     .preemptive()
-                    .basic(ted.username(), ted.apiToken())
+                    .basic(ted.username(), ted.anyApiToken().token())
                 .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
             .when()
                 .get("/pluginManager/api/json?depth=1")
@@ -71,15 +72,21 @@ public class JenkinsContainerTest {
 
     @Test
     public void shouldConnectAgent() {
-        JenkinsSpec spec = JenkinsSpec.jenkinsBuilder().build();
+        JenkinsSpec spec = JenkinsSpec.jenkinsBuilder()
+                .plugins(Stream.of(PluginSpec.pluginBuilder()
+                        .artifactId("instance-identity")
+                        .build())
+                        .collect(Collectors.toSet()))
+                .build();
         try (Network network = Network.newNetwork();
-             JenkinsContainer jenkinsServer = new JenkinsContainer(spec).withNetwork(network).withNetworkAliases("jcontroller")) {
+             JenkinsContainer jenkinsServer = new JenkinsContainer(spec).withNetwork(network).withNetworkAliases("jcontroller").withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(JenkinsContainer.class)))
+        ) {
             jenkinsServer.start();
             GeneratedUser ted = jenkinsServer.getUserByUsername("ted");
             Response response = given()
                     .auth()
                     .preemptive()
-                    .basic(ted.username(), ted.apiToken())
+                    .basic(ted.username(), ted.anyApiToken().token())
                     .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
                     .when()
                     .get("/api/"); // X-Instance-Identity is not in the json response
@@ -102,7 +109,7 @@ public class JenkinsContainerTest {
                         .until(() -> given()
                                 .auth()
                                 .preemptive()
-                                .basic(ted.username(), ted.apiToken())
+                                .basic(ted.username(), ted.anyApiToken().token())
                                 .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
                                 .when()
                                 .get("/computer/api/json")
