@@ -28,18 +28,20 @@ for (def userReq in input['users']) {
     user.save()
 }
 
-// TODO conditional?
-def agentName = 'agent-1'
-def workspaceDir = '/workspace'
-def launcher = new hudson.slaves.JNLPLauncher(true)
-def agent = new hudson.slaves.DumbSlave(agentName, workspaceDir, launcher)
-j.addNode(agent)
-def agentSecret = j.nodesObject.getNode(agentName)?.computer?.jnlpMac
+def createdAgents = []
+
+for (def agentReq in input['agents']) {
+    def agentName = agentReq['name']
+    def workspaceDir = agentReq['workspaceDir']
+    def launcher = new hudson.slaves.JNLPLauncher(true)
+    def agent = new hudson.slaves.DumbSlave(agentName, workspaceDir, launcher)
+    j.addNode(agent)
+    def agentSecret = j.nodesObject.getNode(agentName)?.computer?.jnlpMac
+    createdAgents.add([name: agentName, secret: agentSecret])
+}
 
 def generated = [
-        agents: [
-                [name: agentName, secret: agentSecret],
-        ],
+        agents: createdAgents,
         users : createdUsers,
 ]
 def destination = new File(j.rootDir, '.tc.json')
