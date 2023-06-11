@@ -8,6 +8,11 @@ Spin up a real Jenkins, run your init scripts, install your plugin set, and test
 
 ## Open Questions
 
+Should we allow bringing your own http client and serialization?
+Effectively this would mean having to depend on multiple modules, but it would allow users to avoid classpath conflicts.
+
+How to surface/monitor installation/startup errors in the container - [container to slf4j][slf4j]?
+
 ### Dynamic Commands and Restart
 
 The [official Jenkins docker image][image] includes a script for installing plugins.
@@ -21,19 +26,8 @@ We have some layers to model:
 
 Is the best place for this in creating a custom image?
 
-My first thought was to try this without a custom image, but seemed like it'd take much longer than a custom image:
-1. wait for startup
-2. copy files into container
-3. exec in container
-4. restart
-
-For the testcontainers init layer, are there recommended patterns for copying a file from the classpath to the
-container?
-
-One option is to copy to a temp file, then have a COPY command in the image.
-
-Each stage has several failure modes.
-How to surface/monitor installation/startup errors in the container - [container to slf4j][slf4j]?
+Answer: heavyweight images are best created out-of-band and used in tests. The docker image builder is better used for
+light overrides specific to certain tests.
 
 
 [image]: https://github.com/jenkinsci/docker/blob/master/README.md
@@ -47,3 +41,5 @@ Are there patterns for coordinating multiple containers from a single spec?
     .addAgent(jenkinsAgentBuilder().name("agent-1").build()) // container 2
     .addAgent(jenkinsAgentBuilder().name("agent-2").build()) // container 3
     .build()
+
+So far the tests are spinning up multiple containers, but there could be room for pushing this into the JenkinsSpec.
