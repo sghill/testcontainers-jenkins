@@ -11,16 +11,15 @@ import net.sghill.testcontainers.jenkins.input.ProvisioningRequest;
 import net.sghill.testcontainers.jenkins.input.UserRequest;
 import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
 import net.sghill.testcontainers.jenkins.spec.PluginSpec;
-import org.jetbrains.annotations.NotNull;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
@@ -42,7 +41,7 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
     public JenkinsContainer(JenkinsSpec spec) {
         super(new ImageFromDockerfile()
                 .withFileFromTransferable("jenkins-version", Transferable.of("2.387.2", 0100666))
-                .withFileFromTransferable("tc-input.json", Transferable.of(config()))
+                .withFileFromTransferable("tc-input.json", Transferable.of(configFrom(spec)))
                 .withFileFromClasspath("startup.groovy", "startup.groovy")
                 .withDockerfileFromBuilder(b ->
                 b
@@ -57,11 +56,11 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
         addExposedPorts(PORT, INBOUND_AGENT_PORT);
     }
 
-    private static byte[] config() {
+    private static byte[] configFrom(JenkinsSpec spec) {
         try {
             return new ObjectMapper().writeValueAsBytes(
                     ProvisioningRequest.create(
-                            Stream.of(UserRequest.create("ted", Stream.of(ApiTokenRequest.create("token1")).collect(toSet()))).collect(toSet()),
+                            spec.users().stream().map(u -> UserRequest.create(u.username(), singleton(ApiTokenRequest.create("token1")))).collect(toSet()), 
                             Stream.of(AgentRequest.create("agent-1")).collect(toSet()))
             );
         } catch (JsonProcessingException e) {

@@ -8,6 +8,7 @@ import net.sghill.testcontainers.jenkins.gen.GeneratedAgent;
 import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
 import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
 import net.sghill.testcontainers.jenkins.spec.PluginSpec;
+import net.sghill.testcontainers.jenkins.spec.UserSpec;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -18,6 +19,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static java.util.Collections.singleton;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -51,11 +54,17 @@ public class JenkinsContainerTest {
     public void shouldInstallGivenPlugins() {
         Set<PluginSpec> plugins = new HashSet<>();
         plugins.add(PluginSpec.pluginBuilder().artifactId("ant").build());
-        JenkinsSpec spec = JenkinsSpec.jenkinsBuilder().plugins(plugins).build();
+        String username = "ted";
+        JenkinsSpec spec = JenkinsSpec.jenkinsBuilder()
+                .users(singleton(UserSpec.userBuilder()
+                        .username(username)
+                        .build()))
+                .plugins(plugins)
+                .build();
         try (JenkinsContainer jenkinsServer = new JenkinsContainer(spec)) {
             jenkinsServer.start();
 
-            GeneratedUser ted = jenkinsServer.getUserByUsername("ted");
+            GeneratedUser ted = jenkinsServer.getUserByUsername(username);
 
             given()
                 .auth()
@@ -71,7 +80,11 @@ public class JenkinsContainerTest {
 
     @Test
     public void shouldConnectAgent() {
+        String username = "jake";
         JenkinsSpec spec = JenkinsSpec.jenkinsBuilder()
+                .users(singleton(UserSpec.userBuilder()
+                                .username(username)
+                                .build()))
                 .plugins(Stream.of(PluginSpec.pluginBuilder()
                         .artifactId("instance-identity")
                         .build())
@@ -81,7 +94,7 @@ public class JenkinsContainerTest {
              JenkinsContainer jenkinsServer = new JenkinsContainer(spec).withNetwork(network).withNetworkAliases("jcontroller").withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(JenkinsContainer.class)))
         ) {
             jenkinsServer.start();
-            GeneratedUser ted = jenkinsServer.getUserByUsername("ted");
+            GeneratedUser ted = jenkinsServer.getUserByUsername(username);
             String instanceIdentity = jenkinsServer.getInstanceIdentity();
             GeneratedAgent genAgent = jenkinsServer.getAgentByName("agent-1");
             AgentsResponse expected = AgentsResponse.create(Arrays.asList(

@@ -12,6 +12,8 @@ public abstract class JenkinsSpec {
     public abstract String version();
 
     public abstract Set<PluginSpec> plugins();
+    
+    public abstract Set<UserSpec> users();
 
     public static Builder jenkinsBuilder() {
         return new AutoValue_JenkinsSpec.Builder()
@@ -27,6 +29,8 @@ public abstract class JenkinsSpec {
         public abstract Builder version(String version);
 
         public abstract Builder plugins(Set<PluginSpec> plugins);
+        
+        public abstract Builder users(Set<UserSpec> users);
 
         public abstract JenkinsSpec build();
     }
