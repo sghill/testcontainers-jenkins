@@ -12,9 +12,9 @@ public abstract class GeneratedUser {
     public abstract String username();
 
     public abstract String password();
-    
+
     public abstract Set<GeneratedApiToken> apiTokens();
-    
+
     public GeneratedApiToken anyApiToken() {
         Set<GeneratedApiToken> tokens = apiTokens();
         if (tokens.isEmpty()) {
