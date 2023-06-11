@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.value.AutoValue;
-import io.restassured.response.Response;
 import net.sghill.testcontainers.jenkins.gen.GeneratedAgent;
 import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
 import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
@@ -83,14 +82,7 @@ public class JenkinsContainerTest {
         ) {
             jenkinsServer.start();
             GeneratedUser ted = jenkinsServer.getUserByUsername("ted");
-            Response response = given()
-                    .auth()
-                    .preemptive()
-                    .basic(ted.username(), ted.anyApiToken().token())
-                    .port(jenkinsServer.getMappedPort(JenkinsContainer.PORT))
-                    .when()
-                    .get("/api/"); // X-Instance-Identity is not in the json response
-            String instanceIdentity = response.header("X-Instance-Identity");
+            String instanceIdentity = jenkinsServer.getInstanceIdentity();
             GeneratedAgent genAgent = jenkinsServer.getAgentByName("agent-1");
             AgentsResponse expected = AgentsResponse.create(Arrays.asList(
                     AgentResponse.create("Built-In Node", false, false),

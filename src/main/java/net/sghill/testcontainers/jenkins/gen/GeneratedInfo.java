@@ -13,10 +13,13 @@ public abstract class GeneratedInfo {
 
     @JsonProperty("users")
     public abstract Set<GeneratedUser> users();
+    
+    public abstract String getInstanceIdentity();
 
     @JsonCreator
     public static GeneratedInfo create(@JsonProperty("users") Set<GeneratedUser> users,
-                                       @JsonProperty("agents") Set<GeneratedAgent> agents) {
-        return new AutoValue_GeneratedInfo(agents, users);
+                                       @JsonProperty("agents") Set<GeneratedAgent> agents,
+                                       @JsonProperty("instanceIdentity") String instanceIdentity) {
+        return new AutoValue_GeneratedInfo(agents, users, instanceIdentity);
     }
 }

@@ -40,9 +40,12 @@ for (def agentReq in input['agents']) {
     createdAgents.add([name: agentName, secret: agentSecret])
 }
 
+def instanceIdentity = org.jenkinsci.main.modules.instance_identity.InstanceIdentity.get().encodedPublicKey
+
 def generated = [
         agents: createdAgents,
         users : createdUsers,
+        instanceIdentity: instanceIdentity,
 ]
 def destination = new File(j.rootDir, '.tc.json')
 destination.createNewFile()

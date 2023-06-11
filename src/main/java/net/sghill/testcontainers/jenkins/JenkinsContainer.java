@@ -88,6 +88,10 @@ public class JenkinsContainer extends GenericContainer<JenkinsContainer> {
         }
         return null;
     }
+    
+    public String getInstanceIdentity() {
+        return info().getInstanceIdentity();
+    }
 
     private GeneratedInfo info() {
         if (_info != null) {
