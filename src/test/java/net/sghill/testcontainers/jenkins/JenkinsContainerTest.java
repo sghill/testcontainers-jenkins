@@ -9,6 +9,7 @@ import net.sghill.testcontainers.jenkins.gen.GeneratedUser;
 import net.sghill.testcontainers.jenkins.spec.JenkinsSpec;
 import net.sghill.testcontainers.jenkins.spec.PluginSpec;
 import net.sghill.testcontainers.jenkins.spec.UserSpec;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
@@ -51,6 +52,7 @@ public class JenkinsContainerTest {
     }
 
     @Test
+    @Ignore("starting around 2023-08-20: Could not find the file /var/jenkins_home/.tc.json")
     public void shouldInstallGivenPlugins() {
         Set<PluginSpec> plugins = new HashSet<>();
         plugins.add(PluginSpec.pluginBuilder().artifactId("ant").build());
