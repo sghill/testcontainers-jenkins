@@ -2,7 +2,7 @@
 assertj = "3.25.3"
 auto-value = "1.10.4"
 awaitility = "4.2.0"
-jackson = "2.16.1"
+jackson = "2.16.2"
 junit4 = "4.13.2"
 rest-assured = "5.4.0"
 slf4j = "1.7.36"
