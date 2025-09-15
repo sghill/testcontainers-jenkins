@@ -1,5 +1,5 @@
 [versions]
-assertj = "3.27.3"
+assertj = "3.27.4"
 auto-value = "1.11.0"
 awaitility = "4.3.0"
 jackson = "2.18.2"
