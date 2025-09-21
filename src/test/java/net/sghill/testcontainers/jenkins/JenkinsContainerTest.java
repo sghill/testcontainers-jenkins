@@ -104,7 +104,7 @@ public class JenkinsContainerTest {
                     AgentResponse.create("agent-1", true, false)
             ));
 
-            try (GenericContainer<?> agent = new GenericContainer<>(DockerImageName.parse("jenkins/jnlp-agent-jdk11"))) {
+            try (GenericContainer<?> agent = new GenericContainer<>(DockerImageName.parse("jenkins/inbound-agent"))) {
                 agent
                         .withNetwork(network)
                         .withCommand("-direct", "jcontroller:50000", "-instanceIdentity", instanceIdentity, "-workDir", "/workspace", genAgent.secret(), genAgent.name())
