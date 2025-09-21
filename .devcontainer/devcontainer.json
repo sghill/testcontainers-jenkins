@@ -18,7 +18,7 @@
 	//
 	// Browse more options at: https://hub.docker.com/r/microsoft/devcontainers
 	// or build your own using the Dockerfile option below.
-	"image": "mcr.microsoft.com/devcontainers/universal:3.0.3"
+	"image": "mcr.microsoft.com/devcontainers/universal:4.0.1"
 	// Use "build":
 	// instead of the image to use a Dockerfile to build an image.
 	// "build": {
