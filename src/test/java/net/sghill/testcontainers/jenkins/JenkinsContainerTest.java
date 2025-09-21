@@ -107,7 +107,7 @@ public class JenkinsContainerTest {
             try (GenericContainer<?> agent = new GenericContainer<>(DockerImageName.parse("jenkins/inbound-agent"))) {
                 agent
                         .withNetwork(network)
-                        .withCommand("-direct", "jcontroller:50000", "-instanceIdentity", instanceIdentity, "-workDir", "/workspace", genAgent.secret(), genAgent.name())
+                        .withCommand("-direct", "jcontroller:50000", "-instanceIdentity", instanceIdentity, "-workDir", "/home/jenkins/agent", "-secret", genAgent.secret(), "-name", genAgent.name())
                         .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger(JenkinsContainer.class)))
                         .waitingFor(Wait.forLogMessage("^INFO: Connected\n", 1));
                 agent.start();
