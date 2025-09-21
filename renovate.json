@@ -6,11 +6,18 @@
   "packageRules": [
     {
       "groupName": "Jackson dependencies",
-      "matchPackagePatterns": ["^com\\.fasterxml\\.jackson"],
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": [
+        "/^com\\.fasterxml\\.jackson/"
+      ]
     },
     {
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
       "automerge": true
     }
   ],
