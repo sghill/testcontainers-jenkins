@@ -3,7 +3,7 @@
 //
 // See https://aka.ms/devcontainer.json for more information.
 {
-	"name": "Ona",
+	"name": "testcontainers-jenkins",
 	// This universal image (~10GB) includes many development tools and languages,
 	// providing a convenient all-in-one development environment.
 	//
@@ -18,7 +18,7 @@
 	//
 	// Browse more options at: https://hub.docker.com/r/microsoft/devcontainers
 	// or build your own using the Dockerfile option below.
-	"image": "mcr.microsoft.com/devcontainers/universal:5.0.2"
+	"image": "mcr.microsoft.com/devcontainers/java:8",
 	// Use "build":
 	// instead of the image to use a Dockerfile to build an image.
 	// "build": {
@@ -27,9 +27,12 @@
     // }
 	// Features add additional features to your environment. See https://containers.dev/features
 	// Beware: features are not supported on all platforms and may have unintended side-effects.
-	// "features": {
-    //   "ghcr.io/devcontainers/features/docker-in-docker": {
-    //     "moby": false
-    //   }
-    // }
+	"features": {
+	  "ghcr.io/devcontainers/features/docker-in-docker:2": {
+		"moby": false
+	  },
+	  "ghcr.io/devcontainers/features/java:1": {
+		"version": "17"
+	  }
+    }
 }
