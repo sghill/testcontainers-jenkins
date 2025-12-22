@@ -18,7 +18,7 @@
 	//
 	// Browse more options at: https://hub.docker.com/r/microsoft/devcontainers
 	// or build your own using the Dockerfile option below.
-	"image": "mcr.microsoft.com/devcontainers/java:8",
+	"image": "mcr.microsoft.com/devcontainers/java:25",
 	// Use "build":
 	// instead of the image to use a Dockerfile to build an image.
 	// "build": {
