@@ -18,7 +18,7 @@ public abstract class JenkinsSpec {
     public static Builder jenkinsBuilder() {
         return new AutoValue_JenkinsSpec.Builder()
                 .image("jenkins/jenkins")
-                .version("lts-jdk11")
+                .version("2.528.3-lts")
                 .plugins(new HashSet<>());
     }
 
