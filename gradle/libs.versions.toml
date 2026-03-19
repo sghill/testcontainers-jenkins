@@ -6,7 +6,7 @@ jackson = "2.21.1"
 junit4 = "4.13.2"
 rest-assured = "5.5.7"
 slf4j = "2.0.17"
-testcontainers = "2.0.3"
+testcontainers = "2.0.4"
 
 [libraries]
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
